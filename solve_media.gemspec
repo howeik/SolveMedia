@@ -7,7 +7,7 @@ Gem::Specification.new do |gem|
   gem.name          = "solve_media"
   gem.version       = SolveMedia::VERSION
   gem.authors       = ["Tyler Cunnion"]
-  gem.email         = ["tyler.cunnion@gmail.com"]
+  gem.email         = ["tyler@solvemedia.com"]
   gem.description   = %q{Solve Media CAPTCHA Replacement}
   gem.summary       = %q{Library for implementing the Solve Media CAPTCHA solution.
                         Contains basic Ruby library plus Railtie for Rails 3+.}
