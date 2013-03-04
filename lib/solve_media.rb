@@ -6,6 +6,24 @@ require 'net/http'
 require 'timeout'
 
 module SolveMedia
+
+  # Returns the HTML for the Solve Media puzzle.
+  #
+  # * *Args*    :
+  #   - +ckey+ -> your challenge key
+  #   - +options+ -> options hash (see below)
+  # * *Options* :  
+  #   - +:tabindex+::  HTML tabindex
+  #   - +:theme+::
+  #   - +:lang+::
+  #   - +:size+::
+  #       For +theme+, +lang+, and +size+, please see here: https://portal.solvemedia.com/portal/help/pub/themewiz
+  #   - +:use_SSL+:: set to +true+ if using the puzzle on an HTTPS site
+  #   - +:ajax+:: uses the AJAX api (https://portal.solvemedia.com/portal/help/pub/ajax)
+  # * *Returns*   :
+  #   - HTML string containing code to display the puzzle
+  # * *Raises*    :
+  #   - +AdCopyError+ -> if the ckey is missing
   def self.puzzle(ckey, options = {})
       raise AdCopyError, "Solve Media API keys not found. Keys can be obtained at #{SIGNUP_URL}" unless ckey
 
@@ -14,6 +32,7 @@ module SolveMedia
                   :lang     => 'en',
                   :size     => '300x150',
                   :use_SSL  => false
+                  :ajax     => false
                 }.merge(options)
       
       server = options[:use_SSL] ? SolveMedia::API_SECURE_SERVER : SolveMedia::API_SERVER
@@ -65,13 +84,22 @@ module SolveMedia
   end
 
   # Sends a POST request to the Solve Media server in order to verify the user's input.
-  # Returns +true+ if the user's input is valid, +false+ otherwise
   #
-  # Options:
-  # <tt>:validate_response</tt>::  Whether or not the Solve Media authenticator should be used to validate the server's response. If this is set to +true+ and the validation fails, an AdCopyError is raised.
-  # <tt>:timeout</tt>::  The amount of time in seconds before the request should timeout. If the request times out, a Timeout::Error is raised.
-  # <tt>:model</tt>::  An ActiveRecord model. If verification fails, an error will be added to this model.
-  # <tt>:error_message</tt>::  A custom error message (to be used in conjunction with <tt>:model</tt>) to be used if verification fails.
+  # * *Args*    :
+  #   - +challenge+ -> The challenge id. Normally found in the form field +adcopy_challenge+
+  #   - +acresponse+ -> The user's response to the puzzle. Normally found in the form field +adcopy_response+
+  #   - +vkey+ -> Your verification key
+  #   - +hkey+ -> Your hash key
+  #   - +remote_ip+ -> The IP from which the form was submitted
+  #   - +options+ -> Options hash (see below)
+  # * *Options* :  
+  #   - +:validate_response+::  Whether or not the Solve Media authenticator should be used to validate the server's response. Defaults to +true+
+  #   - +:timeout+:: The amount of time in seconds before the request should timeout
+  # * *Returns*   :
+  #   - +true+ or +false+, depending on whether the user's answer was correct
+  # * *Raises*    :
+  #   - +AdCopyError+ -> If +validate_response+ is true and the response cannot be verified
+  #   - +Timeout::Error+ -> If the request to the verification server takes longer than the specified time
   def self.verify(challenge, acresponse, vkey, hkey, remote_ip, options = {})
     options = { :validate_response  => true,
                 :timeout            => 5,

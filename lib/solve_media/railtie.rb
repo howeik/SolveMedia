@@ -1,11 +1,12 @@
 require "solve_media/view_helpers"
 require "solve_media/controller_methods"
 module SolveMedia
+    # Integrates the Solve Media library into the Rails project.
     class Railtie < Rails::Railtie
         config.solve_media = ActiveSupport::OrderedOptions.new
 
         initializer "solve_media.configure" do |app|
-            SolveMedia::CKEY = app.config.solve_media[:ckey]
+            SolveMedia::CKEY = app.config.solve_media[:ckey] 
             SolveMedia::VKEY = app.config.solve_media[:vkey]
             SolveMedia::HKEY = app.config.solve_media[:hkey]
 
