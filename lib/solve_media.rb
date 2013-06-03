@@ -30,62 +30,62 @@ module SolveMedia
   # @return [String] HTML string containing code to display the puzzle
   #
   def self.puzzle(ckey, options = {})
-      raise AdCopyError, "Solve Media API keys not found. Keys can be obtained at #{SIGNUP_URL}" unless ckey
+    raise AdCopyError, "Solve Media API keys not found. Keys can be obtained at #{SIGNUP_URL}" unless ckey
 
-      options = { :tabindex => nil,
-                  :theme    => 'purple',
-                  :lang     => 'en',
-                  :size     => '300x150',
-                  :use_SSL  => false,
-                  :ajax     => false
-                }.merge(options)
+    options = { :tabindex => nil,
+                :theme    => 'purple',
+                :lang     => 'en',
+                :size     => '300x150',
+                :use_SSL  => false,
+                :ajax     => false
+              }.merge(options)
       
-      server = options[:use_SSL] ? SolveMedia::API_SECURE_SERVER : SolveMedia::API_SERVER
+    server = options[:use_SSL] ? SolveMedia::API_SECURE_SERVER : SolveMedia::API_SERVER
       
-      if options[:ajax]
-        aopts = {:theme => options[:theme], :lang => options[:lang], :size => options[:size]}
-        aopts[:tabindex] = options[:tabindex] if options[:tabindex]
+    if options[:ajax]
+      aopts = {:theme => options[:theme], :lang => options[:lang], :size => options[:size]}
+      aopts[:tabindex] = options[:tabindex] if options[:tabindex]
 
-        output = <<-EOF
-          <script src="#{server}/papi/challenge.ajax" />
-          <script>
-            function loadSolveMediaCaptcha(){
-              if(window.ACPuzzle) { 
-                  ACPuzzle.create('#{ckey}', '#{options[:ajax_div]}', {#{aopts.map{|k,v| "#{k}:'#{v}'" }.join(', ') }});
-              } else {
-                  setTimeout(loadSolveMediaCaptcha, 50);
-              }
+      output = <<-EOF
+        <script src="#{server}/papi/challenge.ajax" />
+        <script>
+          function loadSolveMediaCaptcha(){
+            if(window.ACPuzzle) { 
+                ACPuzzle.create('#{ckey}', '#{options[:ajax_div]}', {#{aopts.map{|k,v| "#{k}:'#{v}'" }.join(', ') }});
+            } else {
+                setTimeout(loadSolveMediaCaptcha, 50);
             }
-            loadSolveMediaCaptcha();
-          </script>
-        EOF
-      else
-        output = []
-        
-        output << %{<script type="text/javascript">}
-        output << "	var ACPuzzleOptions = {"
-        output << %{			tabindex:   #{options[:tabindex]},} unless options[:tabindex].nil?
-        output << %{			theme:      '#{options[:theme]}',}
-        output << %{			lang:       '#{options[:lang]}',}
-        output << %{			size:       '#{options[:size]}'}
-        output << "	};"
-        output << %{</script>}
-        
-        output << %{<script type="text/javascript"}
-        output << %{   src="#{server}/papi/challenge.script?k=#{ckey}">}
-        output << %{</script>}
+          }
+          loadSolveMediaCaptcha();
+        </script>
+      EOF
+    else
+      output = []
+      
+      output << %{<script type="text/javascript">}
+      output << "	var ACPuzzleOptions = {"
+      output << %{			tabindex:   #{options[:tabindex]},} unless options[:tabindex].nil?
+      output << %{			theme:      '#{options[:theme]}',}
+      output << %{			lang:       '#{options[:lang]}',}
+      output << %{			size:       '#{options[:size]}'}
+      output << "	};"
+      output << %{</script>}
+      
+      output << %{<script type="text/javascript"}
+      output << %{   src="#{server}/papi/challenge.script?k=#{ckey}">}
+      output << %{</script>}
 
-        output << %{<noscript>}
-        output << %{   <iframe src="#{server}/papi/challenge.noscript?k=#{ckey}"}
-        output << %{	 height="300" width="500" frameborder="0"></iframe><br/>}
-        output << %{   <textarea name="adcopy_challenge" rows="3" cols="40">}
-        output << %{   </textarea>}
-        output << %{   <input type="hidden" name="adcopy_response"}
-        output << %{	 value="manual_challenge"/>}
-        output << %{</noscript>}
-        output = output.join("\n")
-      end
-      return output
+      output << %{<noscript>}
+      output << %{   <iframe src="#{server}/papi/challenge.noscript?k=#{ckey}"}
+      output << %{	 height="300" width="500" frameborder="0"></iframe><br/>}
+      output << %{   <textarea name="adcopy_challenge" rows="3" cols="40">}
+      output << %{   </textarea>}
+      output << %{   <input type="hidden" name="adcopy_response"}
+      output << %{	 value="manual_challenge"/>}
+      output << %{</noscript>}
+      output = output.join("\n")
+    end
+    return output
   end
 
   # Sends a POST request to the Solve Media server in order to verify the user's input.
