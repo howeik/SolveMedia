@@ -5,25 +5,30 @@ require "solve_media/railtie" if defined? ::Rails::Railtie
 require 'net/http'
 require 'timeout'
 
+# Methods for using the Solve Media service. These methods are called internally
+# by the Rails Railtie; those not using Rails may call these methods directly.
 module SolveMedia
 
   # Returns the HTML for the Solve Media puzzle.
+  # For theme, lang, and size options, see 
+  # (https://portal.solvemedia.com/portal/help/pub/themewiz)
   #
-  # * *Args*    :
-  #   - +ckey+ -> your challenge key
-  #   - +options+ -> options hash (see below)
-  # * *Options* :  
-  #   - +:tabindex+::  HTML tabindex
-  #   - +:theme+::
-  #   - +:lang+::
-  #   - +:size+::
-  #       For +theme+, +lang+, and +size+, please see here: https://portal.solvemedia.com/portal/help/pub/themewiz
-  #   - +:use_SSL+:: set to +true+ if using the puzzle on an HTTPS site
-  #   - +:ajax+:: uses the AJAX api (https://portal.solvemedia.com/portal/help/pub/ajax)
-  # * *Returns*   :
-  #   - HTML string containing code to display the puzzle
-  # * *Raises*    :
-  #   - +AdCopyError+ -> if the ckey is missing
+  # @param [String] ckey Your challenge (public) key
+  # @param [Hash] options
+  # @option options [Integer] :tabindex (nil) HTML tabindex
+  # @option options [String] :theme ('purple')
+  # @option options [String] :lang ('en')
+  # @option options [String] :size ('300x150') Widget size. Please note that
+  #   300x150 is the only size which can display ads.
+  # @option options [Boolean] :use_SSL (false) Set to +true+ if using the puzzle
+  #   on an HTTPS site
+  # @option options [Boolean] :ajax (false) Uses the AJAX api
+  #   (https://portal.solvemedia.com/portal/help/pub/ajax)
+  #
+  # @raise [AdCopyError] if key is not set
+  #
+  # @return [String] HTML string containing code to display the puzzle
+  #
   def self.puzzle(ckey, options = {})
       raise AdCopyError, "Solve Media API keys not found. Keys can be obtained at #{SIGNUP_URL}" unless ckey
 
@@ -31,7 +36,7 @@ module SolveMedia
                   :theme    => 'purple',
                   :lang     => 'en',
                   :size     => '300x150',
-                  :use_SSL  => false
+                  :use_SSL  => false,
                   :ajax     => false
                 }.merge(options)
       
@@ -85,38 +90,44 @@ module SolveMedia
 
   # Sends a POST request to the Solve Media server in order to verify the user's input.
   #
-  # * *Args*    :
-  #   - +challenge+ -> The challenge id. Normally found in the form field +adcopy_challenge+
-  #   - +acresponse+ -> The user's response to the puzzle. Normally found in the form field +adcopy_response+
-  #   - +vkey+ -> Your verification key
-  #   - +hkey+ -> Your hash key
-  #   - +remote_ip+ -> The IP from which the form was submitted
-  #   - +options+ -> Options hash (see below)
-  # * *Options* :  
-  #   - +:validate_response+::  Whether or not the Solve Media authenticator should be used to validate the server's response. Defaults to +true+
-  #   - +:timeout+:: The amount of time in seconds before the request should timeout
-  # * *Returns*   :
-  #   - +true+ or +false+, depending on whether the user's answer was correct
-  # * *Raises*    :
-  #   - +AdCopyError+ -> If +validate_response+ is true and the response cannot be verified
-  #   - +Timeout::Error+ -> If the request to the verification server takes longer than the specified time
-  def self.verify(challenge, acresponse, vkey, hkey, remote_ip, options = {})
+  # @param [String] challenge The challenge id. Normally found in the form
+  #   field +adcopy_challenge+
+  # @param [String] response The user's response to the puzzle. Normally found
+  #   in the form field +acdopy_response+
+  # @param [String] vkey Your verification (private) key
+  # @param [String] hkey Your hash key
+  # @param [String] remote_ip The IP from which the form was submitted
+  # @param [Hash] options
+  #
+  # @option options [Boolean] :validate_response (true) Validate the response
+  #   from the Solve Media server
+  # @option options [Integer] :timeout (5) Amount of time in seconds before the
+  #   request should time out
+  #
+  # @return [Boolean] Was the user's answer correct?
+  #
+  # @raise [AdCopyError] if +validate_response+ is true and the response
+  #   cannot be verified
+  # @raise [Timeout::Error] if the request to the verification server takes
+  #   longer than expected
+  #
+  def self.verify(challenge, response, vkey, hkey, remote_ip, options = {})
     options = { :validate_response  => true,
                 :timeout            => 5,
               }.merge(options)
     
     #Send POST to SolveMedia
-    response = nil
+    result = nil
     Timeout::timeout(options[:timeout]) do
-      response = Net::HTTP.post_form URI.parse("#{SolveMedia::VERIFY_SERVER}/papi/verify"), {
+      result = Net::HTTP.post_form URI.parse("#{SolveMedia::VERIFY_SERVER}/papi/verify"), {
         "privatekey"  =>  vkey,  
         "challenge"   =>  challenge,
-        "response"    =>  acresponse,
+        "response"    =>  response,
         "remoteip"    =>  remote_ip
       }
     end
 
-    answer, error, authenticator = response.body.split("\n")
+    answer, error, authenticator = result.body.split("\n")
 
     #validate the response
     if options[:validate_response] && authenticator != Digest::SHA1.hexdigest("#{answer}#{challenge}#{hkey}")

@@ -2,6 +2,8 @@ require "solve_media/view_helpers"
 require "solve_media/controller_methods"
 module SolveMedia
     # Integrates the Solve Media library into the Rails project.
+    # Adds {SolveMedia::ViewHelpers} and {SolveMedia::ControllerMethods} to
+    # to the project.
     class Railtie < Rails::Railtie
         config.solve_media = ActiveSupport::OrderedOptions.new
 
