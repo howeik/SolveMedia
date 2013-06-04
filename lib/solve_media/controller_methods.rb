@@ -2,6 +2,7 @@ module SolveMedia
   module ControllerMethods
     # Controller method to verify a Solve Media puzzle. Assumes a form with
     # the puzzle is being processed by the calling method. 
+    #
     # Calls {SolveMedia.verify} internally.
     #
     # @param [Hash] options

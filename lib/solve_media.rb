@@ -10,8 +10,15 @@ require 'timeout'
 module SolveMedia
 
   # Returns the HTML for the Solve Media puzzle.
-  # For theme, lang, and size options, see 
+  # Can be set to use either the standard version or the AJAX version. For more
+  # complex uses of the AJAX version, such as multi-puzzle, you should not use
+  # this method and instead use purpose-written Javascript in your view.
+  #
+  # For theme, lang, and size options, see
   # (https://portal.solvemedia.com/portal/help/pub/themewiz)
+  #
+  # For more about the AJAX puzzle, see
+  # (https://portal.solvemedia.com/portal/help/pub/ajax)
   #
   # @param [String] ckey Your challenge (public) key
   # @param [Hash] options
@@ -22,10 +29,13 @@ module SolveMedia
   #   300x150 is the only size which can display ads.
   # @option options [Boolean] :use_SSL (false) Set to +true+ if using the puzzle
   #   on an HTTPS site
-  # @option options [Boolean] :ajax (false) Uses the AJAX api
-  #   (https://portal.solvemedia.com/portal/help/pub/ajax)
+  # @option options [Boolean] :ajax (false) Uses the AJAX api (see above)
+  # @option options [String] :ajax_div ID of the div element into which the
+  #   puzzle is inserted, if using AJAX. Required if +ajax+ is set to +true+.
   #
   # @raise [AdCopyError] if key is not set
+  # @raise [AdCopyError] if AJAX puzzle is selected but no container div is
+  #   specified
   #
   # @return [String] HTML string containing code to display the puzzle
   #
@@ -39,16 +49,18 @@ module SolveMedia
                 :use_SSL  => false,
                 :ajax     => false
               }.merge(options)
-      
+
     server = options[:use_SSL] ? SolveMedia::API_SECURE_SERVER : SolveMedia::API_SERVER
       
     if options[:ajax]
+      puts options.inspect
+      raise AdCopyError, "No div specified for AJAX puzzle" unless options[:ajax_div]
       aopts = {:theme => options[:theme], :lang => options[:lang], :size => options[:size]}
       aopts[:tabindex] = options[:tabindex] if options[:tabindex]
 
       output = <<-EOF
-        <script src="#{server}/papi/challenge.ajax" />
-        <script>
+        <script src="#{server}/papi/challenge.ajax"></script>
+        <script type="text/javascript">
           function loadSolveMediaCaptcha(){
             if(window.ACPuzzle) { 
                 ACPuzzle.create('#{ckey}', '#{options[:ajax_div]}', {#{aopts.map{|k,v| "#{k}:'#{v}'" }.join(', ') }});
