@@ -1,7 +1,7 @@
-require "solve_media/version"
-require "solve_media/constants"
-require "solve_media/ad_copy_error"
-require "solve_media/railtie" if defined? ::Rails::Railtie
+require "solvemedia/version"
+require "solvemedia/constants"
+require "solvemedia/ad_copy_error"
+require "solvemedia/railtie" if defined? ::Rails::Railtie
 require 'net/http'
 require 'timeout'
 

@@ -1,10 +1,10 @@
 # -*- encoding: utf-8 -*-
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'solve_media/version'
+require 'solvemedia/version'
 
 Gem::Specification.new do |gem|
-  gem.name          = "solve_media"
+  gem.name          = "solvemedia"
   gem.version       = SolveMedia::VERSION
   gem.authors       = ["Tyler Cunnion"]
   gem.email         = ["tyler@solvemedia.com"]
