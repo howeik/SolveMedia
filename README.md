@@ -8,30 +8,32 @@ revenue with our publisher partners.
 The Solve Media gem makes it easy to use the Solve Media unit in your Ruby and
 Rails projects.
 
-## Note
+## Backward Compatibility 
 
-This gem supercedes and replaces the earlier gem from Solve Media, called
-`solvemedia`. This new gem provides improved compatibility with Rails 3 and
-is now also usable in pure Ruby as well. If you previously used the old gem with
-Rails 3, you should uninstall it, install this one, and configure the keys as
-below. Your view and controller code should continue to work without alteration.
+This new gem provides improved compatibility with Rails 3 and is now also 
+usable in pure Ruby as well. If you used a previous version of the Solve Media
+gem, your keys were stored in `config/solvemedia_config.yml`. Keys are now
+configured with the rest of your application config, in `config/application.rb`,
+or in one of the environment config files. Since we recommend keeping your API 
+keys in a separate file outside of version control, you may wish to keep 
+`solvemedia_config.yml`. See "Setting API Keys" below.
 
-This gem is not directly backward compatible with Rails 2. Rails 2 users should 
+*This gem is not directly backward compatible with Rails 2.* Rails 2 users should 
 continue to use the old gem.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'solve_media'
+    gem 'solvemedia'
 
 And then execute:
 
     $ bundle
 
-Or install it yourself as:
+Or install it yourself with:
 
-    $ gem install solve_media
+    $ gem install solvemedia
 
 ## Usage
 
@@ -43,15 +45,20 @@ and get a set of API keys.
 To use within a Rails 3 project, you must set these keys within the app config.
 Inside config/application.rb:
 
-    config.solve_media.ckey = "Your Challenge (Public) Key"
-    config.solve_media.vkey = "Your Verification (Private) Key"
-    config.solve_media.hkey = "Your Authentication Hash Key"
+    config.solvemedia.ckey = "Your Challenge (Public) Key"
+    config.solvemedia.vkey = "Your Verification (Private) Key"
+    config.solvemedia.hkey = "Your Authentication Hash Key"
 
 In addition, you can set these keys on a per-environment basis by using the
 environment configuration files under config/environment/. For instance, you
 may wish to create a second set of keys with the security mode 
 set to "Security" instead of "Revenue", to avoid receiving ads during 
 development.
+
+These API keys should remain private and not be checked into version control, 
+so we recommend storing them in a separate YAML or Ruby file. There are a number
+of resources on the web dealing with configuration for Rails project, and we
+encourage you to use a solution appropriate to your project.
 
 ### Displaying the Puzzle
 
